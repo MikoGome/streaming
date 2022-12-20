@@ -1,0 +1,145 @@
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+body {
+  display: flex;
+  font-family: Arial, Helvetica, sans-serif;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: rgb(36, 36, 36);
+}
+
+video {
+  width: 100%;
+  --text-shadow-blur: 2px;
+  --text-color: white;
+  display: block;
+}
+
+video::cue {
+  background: none;
+  -webkit-text-stroke: 2px black;
+  font-size: 75%;
+  color: var(--text-color);
+  text-shadow: 
+        -2px 2px var(--text-shadow-blur) black,
+        2px 2px var(--text-shadow-blur) black,
+        2px -2px var(--text-shadow-blur) black,
+        -2px -2px var(--text-shadow-blur) black,
+        2px 0 var(--text-shadow-blur) black,
+        0 2px var(--text-shadow-blur) black,
+        0 -2px var(--text-shadow-blur) black,
+        -2px 0 var(--text-shadow-blur) black;
+}
+
+video::-webkit-media-controls {
+  /* display:none !important; */
+}
+video::-webkit-media-controls-enclosure {
+  /* display:none !important; */
+}
+
+main {
+  width: 75%;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+#player{
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  padding: 1%;
+  position: absolute;
+  bottom: 0;
+  z-index: 1000;
+  transition: opacity 0.3s linear;
+  background: linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.76))
+}
+
+.hide {
+  opacity: 0;
+}
+
+.bottom {
+  display: flex;
+  justify-content: space-between;
+}
+
+.top > input {
+  width: 100%;
+}
+
+#volume {
+  display: inline-flex
+}
+
+#volume > input {
+  width: 50%;
+}
+
+#time {
+  color: white;
+  display: inline-block;
+}
+
+.svg-container {
+  width: 30px;
+  margin: 0 10px;
+  background: transparent;
+  color: white;
+  border: none;
+}
+
+.left {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+
+main button, input[type=range], #time{
+  filter: brightness(0.75);
+}
+
+button, input[type=range] {
+  cursor: pointer;
+}
+
+button:hover, input[type=range]:hover, #time:hover {
+  filter: brightness(1);
+}
+
+.active {
+  filter: brightness(2);
+}
+
+.cursor-none {
+  cursor: none;
+}
+
+#sync, #subtitle-color {
+  background: white;
+  padding: 5px;
+  transition: all 0.25s;
+}
+
+#sync:hover, #subtitle-color:hover {
+  filter: brightness(1.1);
+  transform: scale(1.1);
+}
+
+#sync.green {
+  background: green;
+}
+
+#subtitle-color.yellow {
+  background-color: yellow;
+}
