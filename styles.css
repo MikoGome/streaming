@@ -91,6 +91,7 @@ main {
 #time {
   color: white;
   display: inline-block;
+  cursor: default;
 }
 
 .svg-container {

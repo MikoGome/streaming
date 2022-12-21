@@ -152,22 +152,27 @@ track.addEventListener('load', () => {
   const cues = track.track.cues;
   for(let i = 0; i < cues.length; i++) {
     const cue = cues[i];
+    cue.line = -1;
+    const lines = cue.text.match(/\n/g)?.length || 0;
     cue.addEventListener('update', (e) => {
       cue.track.mode = 'hidden';
-      if(e.detail) {
-        cue.line = -1;
+      if(document.fullscreenElement === main) {
+        cue.line = -1
+      } else if(e.detail) {
+        cue.line = -1-lines;
       } else {
-        cue.line = -4;
+        cue.line = -4-lines;
       }
       cue.track.mode = 'showing';
     });
-
+    
     cue.onenter = () => {
+      if(document.fullscreenElement === main) return;
       cue.track.mode = 'hidden';
       if(player.classList.contains('hide')) {
-        cue.line = -1;
+        cue.line = -1-lines;
       } else {
-        cue.line = -4;
+        cue.line = -4-lines;
       }
       cue.track.mode = 'showing';
 
@@ -221,7 +226,20 @@ input.addEventListener('mouseup', () => {
   isChangingTime = false;
 });
 
+input.addEventListener('touchstart', () => {
+  isChangingTime = true;
+});
+
+input.addEventListener('touchend', () => {
+  isChangingTime = false;
+});
+
 input.addEventListener('click', (e) => {
+  video.currentTime = e.target.value;
+  if(socket) socket.emit('updateTime', video.currentTime);
+});
+
+input.addEventListener('touchend', (e) => {
   video.currentTime = e.target.value;
   if(socket) socket.emit('updateTime', video.currentTime);
 });
@@ -337,7 +355,7 @@ player.addEventListener('mousemove', (e) => {
 player.addEventListener('hide', (e) => {
   const flag = e.detail;
   player.classList.toggle('hide', flag);
-  if(!track.track) return;
+  if(!track.track.activeCues) return;
   for(const cue of track.track.activeCues) {
     cue.dispatchEvent(new CustomEvent('update', {detail: flag}));
   }
