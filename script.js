@@ -52,12 +52,12 @@ syncButton.addEventListener('click', () => {
 
 
 subtitleColorButton.addEventListener('click', () => {
-  const color = getComputedStyle(video).getPropertyValue('--text-color');  
+  const color = getComputedStyle(document.documentElement).getPropertyValue('--text-color');  
   if(color === ' white') {
-    video.style.setProperty('--text-color', ' yellow');
+    document.documentElement.style.setProperty('--text-color', ' yellow');
     subtitleColorButton.classList.add('yellow');
   } else {
-    video.style.setProperty('--text-color', ' white');
+    document.documentElement.style.setProperty('--text-color', ' white');
     subtitleColorButton.classList.remove('yellow');
   }
 });
@@ -152,7 +152,6 @@ track.addEventListener('load', () => {
   const cues = track.track.cues;
   for(let i = 0; i < cues.length; i++) {
     const cue = cues[i];
-    let clearFlag = false;
     cue.addEventListener('update', (e) => {
       cue.track.mode = 'hidden';
       if(e.detail) {
@@ -338,8 +337,12 @@ player.addEventListener('mousemove', (e) => {
 player.addEventListener('hide', (e) => {
   const flag = e.detail;
   player.classList.toggle('hide', flag);
-  console.log(typeof track.track.activeCues, track.track.activeCues);
+  if(!track.track) return;
   for(const cue of track.track.activeCues) {
     cue.dispatchEvent(new CustomEvent('update', {detail: flag}));
   }
+});
+
+player.addEventListener('dblclick', (e) => {
+  e.stopPropagation();
 });

@@ -27,7 +27,7 @@ app.get('/video', (req, res) => {
     'Content-Type': 'video/mp4',
     'Content-Length': length,
     'Accept-Ranges': 'bytes',
-    'Content-Range': `bytes ${start}-${end}/${size}`
+    'Content-Range': `bytes ${start}-${end}/${size}`,
   });
   fs.createReadStream(video, {start, end}).pipe(res);
 });
