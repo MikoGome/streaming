@@ -3,6 +3,7 @@ const path = require('path');
 const {convert} = require('./srt2vtt.js');
 const express = require('express');
 const app = express();
+const https = require('https');
 
 const files = fs.readdirSync('../');
 
@@ -12,6 +13,13 @@ const subtitle = convert('../' + files.find(file => file.endsWith('.srt')));
 const size = fs.statSync(video).size;
 
 app.use(express.static('.'));
+
+app.use(function(req, res, next) {
+  if (req.secure) {
+    res.setHeader('Strict-Transport-Security', 'max-age=63072000; includeSubDomains'); // 2 years
+  }
+  next(); 
+})
 
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
@@ -36,17 +44,13 @@ app.get('/subtitle', (req, res) => {
   res.end(subtitle);
 });
 
-app.use((req, res) => {
-  res.redirect('/');
-});
-
-const server = app.listen(3000, () => console.log('server started'));
+const server = app.listen(3000, () => console.log('http server started at 3000'));
 
 const socket = require('socket.io');
 
 const io = socket(server);
 
-io.on('connection', (socket) => {
+const socketHandler = (socket) => {
    
   socket.on('follow', (id) => {
     socket.broadcast.emit('lead', id);
@@ -67,4 +71,15 @@ io.on('connection', (socket) => {
   socket.on('updateTime', (currentTime) => {
     socket.broadcast.emit('updateTime', currentTime);
   });
-});
+}
+
+io.on('connection', socketHandler);
+
+const cert = fs.readFileSync('ca-bundle.txt');
+const key = fs.readFileSync('private-key.txt');
+
+const server2 = https.createServer({cert, key}, app).listen(3001, () => console.log('https server started at 3001'));
+
+const io2 = socket(server2);
+
+io2.on('connection', socketHandler);

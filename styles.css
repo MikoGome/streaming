@@ -16,11 +16,15 @@ body {
   justify-content: center;
   align-items: center;
   height: 100vh;
-  background-color: rgb(36, 36, 36);
+  /* background-color: rgb(36, 36, 36); */
+  background: url('./christmas.jpg');
+  background-size: cover;
 }
 
 video {
-  width: 100%; 
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
   display: block;
 }
 

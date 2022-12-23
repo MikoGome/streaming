@@ -105,8 +105,8 @@ document.body.addEventListener('connect', (e) => {
 document.body.addEventListener('keydown', (e) => {
   if((e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
     // isChangingTime = true;
-    if(e.key === "ArrowLeft") video.currentTime = Math.max(video.currentTime - 15, 0);
-    else if(e.key === "ArrowRight") video.currentTime = Math.min(video.currentTime + 15, video.duration);
+    if(e.key === "ArrowLeft") video.currentTime = Math.max(video.currentTime - 5, 0);
+    else if(e.key === "ArrowRight") video.currentTime = Math.min(video.currentTime + 5, video.duration);
 
     if(socket) socket.emit('updateTime', video.currentTime);
   } else if(e.key === ' ') {
@@ -150,35 +150,38 @@ const track = document.querySelector('track');
 
 track.addEventListener('load', () => {
   const cues = track.track.cues;
+  const base = -1;
+  const barBase = base - 3;
   for(let i = 0; i < cues.length; i++) {
     const cue = cues[i];
-    cue.line = -1;
+    cue.line = base;
     const lines = cue.text.match(/\n/g)?.length || 0;
     cue.addEventListener('update', (e) => {
       cue.track.mode = 'hidden';
       if(document.fullscreenElement === main) {
-        cue.line = -1
+        cue.line = barBase;
       } else if(e.detail) {
-        cue.line = -1-lines;
+        cue.line = base-lines;
       } else {
-        cue.line = -4-lines;
+        cue.line = barBase-lines;
       }
       cue.track.mode = 'showing';
     });
     
     cue.onenter = () => {
-      if(document.fullscreenElement === main) return;
       cue.track.mode = 'hidden';
-      if(player.classList.contains('hide')) {
-        cue.line = -1-lines;
+      if(document.fullscreenElement === main) {
+        cue.line = barBase;
+      } else if(player.classList.contains('hide')) {
+        cue.line = base-lines;
       } else {
-        cue.line = -4-lines;
+        cue.line = barBase-lines;
       }
       cue.track.mode = 'showing';
 
     }
   }
-});
+}, {once: true});
 
 function toggleFullscreen() {
   if(document.fullscreenElement === null) {
@@ -363,4 +366,11 @@ player.addEventListener('hide', (e) => {
 
 player.addEventListener('dblclick', (e) => {
   e.stopPropagation();
+});
+
+document.addEventListener('fullscreenchange', () => {
+  if(!track.track.activeCues) return;
+  for(const cue of track.track.activeCues) {
+    cue.dispatchEvent(new CustomEvent('update', {detail: player.classList.contains('hide')}));
+  }
 });
