@@ -5,10 +5,12 @@ const express = require('express');
 const app = express();
 const https = require('https');
 
-const files = fs.readdirSync('../');
+const folder = '../' + process.env.VIDEO + '/';
+const files = fs.readdirSync(folder);
 
-const video = '../' + files.find(file => file.endsWith('.mp4'));
-const subtitle = convert('../' + files.find(file => file.endsWith('.srt')));
+
+const video = folder + files.find(file => file.endsWith('.mp4'));
+const subtitle = convert(folder + files.find(file => file.endsWith('.srt')));
 
 const size = fs.statSync(video).size;
 
@@ -44,11 +46,11 @@ app.get('/subtitle', (req, res) => {
   res.end(subtitle);
 });
 
-const server = app.listen(3000, () => console.log('http server started at 3000'));
+// const server = app.listen(3000, () => console.log('http server started at 3000'));
 
 const socket = require('socket.io');
 
-const io = socket(server);
+// const io = socket(server);
 
 const socketHandler = (socket) => {
    
@@ -73,7 +75,7 @@ const socketHandler = (socket) => {
   });
 }
 
-io.on('connection', socketHandler);
+// io.on('connection', socketHandler);
 
 const cert = fs.readFileSync('ca-bundle.txt');
 const key = fs.readFileSync('private-key.txt');

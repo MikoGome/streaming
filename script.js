@@ -74,7 +74,21 @@ document.body.addEventListener('connect', (e) => {
 
   socket.once('follow', (currentTime, isPaused) => {
     video.currentTime = currentTime;
-    isPaused ? video.pause(): video.play();
+    if(isPaused) {
+      video.pause();
+      playButton.innerHTML = `
+      <svg class="play-icon" viewBox="0 0 24 24">
+        <path fill="currentColor" d="M8,5.14V19.14L19,12.14L8,5.14Z" />
+      </svg>
+      `
+    } else {
+      video.play();
+      playButton.innerHTML = `
+      <svg class="pause-icon" viewBox="0 0 24 24">
+        <path fill="currentColor" d="M14,19H18V5H14M6,19H10V5H6V19Z" />
+      </svg>
+      `
+    }
   });
 
   socket.on('play', (currentTime) => {
@@ -205,7 +219,11 @@ function toggleFullscreen() {
 video.addEventListener('loadedmetadata', () => {
   input.setAttribute('max', video.duration);
   time.innerText = timeString();
-})
+});
+
+video.addEventListener('loadedmetadata', (e) => {
+  e.target.volume = volumeRange.value/100;
+});
 
 playButton.addEventListener('click', (e) => {
   togglePlay();
