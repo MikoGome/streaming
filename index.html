@@ -11,11 +11,11 @@
   <script defer src="script.js"></script>
 </head>
 <body>
-  <button id="sync">Sync</button>
+  <button id="sync" class="hidden appear">Sync</button>
   <br/>
-  <main>
+  <main class="hidden appear">
     <video>
-      <source src="video" type="video/mp4"/> 
+      <source type="video/mp4"/> 
       <track src="subtitle" kind="subtitles" label="english" srclang="en"/>
     </video>
     <div id="player">
@@ -33,7 +33,7 @@
                   <path fill="currentColor" d="M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.84 14,18.7V20.77C18,19.86 21,16.28 21,12C21,7.72 18,4.14 14,3.23M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16C15.5,15.29 16.5,13.76 16.5,12M3,9V15H7L12,20V4L7,9H3Z" />
                 </svg>
               </button>
-              <input type="range" value="50" max="100" id="volume-range"/>
+              <input type="range" value="100" max="100" id="volume-range"/>
             </div>
             <p id="time"></p>
           </div>
@@ -53,6 +53,6 @@
       </div>
   </main>
   <br/>
-  <button id="subtitle-color">Change Subtitle Color</button>
+  <button id="subtitle-color" class="hidden appear">Change Subtitle Color</button>
 </body>
 </html>

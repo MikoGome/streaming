@@ -1,8 +1,17 @@
 let socket = null;
 
-const subtitleColorButton = document.getElementById('subtitle-color');
 const video = document.querySelector('video');
+const subtitleColorButton = document.getElementById('subtitle-color');
 const syncButton = document.getElementById('sync');
+
+fetch('/video')
+.then(res => res.json())
+.then(data => {
+  const {id} = data;
+  const source = document.querySelector('source');
+  source.setAttribute('src', id);
+  video.load();
+});
 
 function togglePlay() {
   if(video.paused) {
@@ -53,11 +62,11 @@ syncButton.addEventListener('click', () => {
 
 subtitleColorButton.addEventListener('click', () => {
   const color = getComputedStyle(document.documentElement).getPropertyValue('--text-color');  
-  if(color === ' white') {
-    document.documentElement.style.setProperty('--text-color', ' yellow');
+  if(color === 'white') {
+    document.documentElement.style.setProperty('--text-color', 'yellow');
     subtitleColorButton.classList.add('yellow');
   } else {
-    document.documentElement.style.setProperty('--text-color', ' white');
+    document.documentElement.style.setProperty('--text-color', 'white');
     subtitleColorButton.classList.remove('yellow');
   }
 });
@@ -165,11 +174,12 @@ const track = document.querySelector('track');
 track.addEventListener('load', () => {
   const cues = track.track.cues;
   const base = -1;
-  const barBase = base - 3;
   for(let i = 0; i < cues.length; i++) {
     const cue = cues[i];
+    cue.text = cue.text.replace('{\\an8}','');
     cue.line = base;
     const lines = cue.text.match(/\n/g)?.length || 0;
+    const barBase = video.videoHeight === 1080 ? base-lines - 2 : base - 3;
     cue.addEventListener('update', (e) => {
       cue.track.mode = 'hidden';
       if(document.fullscreenElement === main) {
@@ -230,7 +240,7 @@ playButton.addEventListener('click', (e) => {
 });
 
 playButton.addEventListener('keydown', (e) => {
-  e.preventDefault();showing
+  e.preventDefault();
 });
 
 fullscreenButton.addEventListener('click', () => {
@@ -392,3 +402,19 @@ document.addEventListener('fullscreenchange', () => {
     cue.dispatchEvent(new CustomEvent('update', {detail: player.classList.contains('hide')}));
   }
 });
+
+video.addEventListener('loadeddata', () => {
+  syncButton.classList.remove('hidden');
+  main.classList.remove('hidden');
+  subtitleColorButton.classList.remove('hidden');
+});
+
+function animationEnd(el) {
+  el.addEventListener('animationend', () => {
+    el.classList.remove('appear');
+  })
+}
+
+animationEnd(syncButton);
+animationEnd(main);
+animationEnd(subtitleColorButton);

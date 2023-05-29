@@ -17,14 +17,17 @@ body {
   align-items: center;
   height: 100vh;
   /* background-color: rgb(36, 36, 36); */
-  background: url('./tavern.jpg');
+  background: url('./background.jpg');
   background-size: cover;
+  background-position: center center;
+  overflow-y: hidden;
 }
 
 video {
   width: 100%;
   height: 100%;
   object-fit: contain;
+  background-color: black;
   display: block;
 }
 
@@ -135,8 +138,10 @@ button:hover, input[type=range]:hover, #time:hover {
 
 #sync, #subtitle-color {
   background: white;
-  padding: 5px;
+  padding: 5px 10px;
   transition: all 0.25s;
+  border: 2px solid black;
+  /* border-radius: 5px; */
 }
 
 #sync:hover, #subtitle-color:hover {
@@ -144,8 +149,18 @@ button:hover, input[type=range]:hover, #time:hover {
   transform: scale(1.1);
 }
 
+
 #sync.green {
-  background: green;
+  background: rgb(0, 160, 0);
+  border-color: darkgreen;
+  animation: syncing 1s linear infinite;
+  animation-direction: alternate;
+  color: black;
+}
+
+@keyframes syncing {
+  from {background-color: rgb(0, 160, 0)}
+  to {background-color: rgb(0, 255, 0);}
 }
 
 #subtitle-color.yellow {
@@ -167,3 +182,24 @@ button:hover, input[type=range]:hover, #time:hover {
   left: 0;
   right: 0;
 }
+
+.hidden {
+  display: none;
+}
+
+
+.appear {
+  animation: slide-in 0.5s cubic-bezier(0.250, 0.460, 0.450, 0.940) 1s backwards;
+}
+
+@keyframes slide-in {
+  0% {
+    transform: translateY(1000px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+

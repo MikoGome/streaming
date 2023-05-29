@@ -1,6 +1,8 @@
 const fs = require('fs');
 
 exports.convert = (file) => {
+  if(!file) return 'WEBVTT \n';
+
   const data =  fs.readFileSync(file, 'utf8');
   const lines = data.split('\n');
   const convertedLines = lines.map(line => {

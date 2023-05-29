@@ -4,15 +4,21 @@ const {convert} = require('./srt2vtt.js');
 const express = require('express');
 const app = express();
 const https = require('https');
+const crypto = require('crypto');
 
 const folder = '../' + process.env.VIDEO + '/';
 const files = fs.readdirSync(folder);
 
 
 const video = folder + files.find(file => file.endsWith('.mp4'));
-const subtitle = convert(folder + files.find(file => file.endsWith('.srt')));
+
+const srt = files.find(file => file.endsWith('.srt'));
+const subtitle = convert(srt ? folder + files.find(file => file.endsWith('.srt')) : null);
 
 const size = fs.statSync(video).size;
+
+
+const ID = crypto.randomUUID();
 
 app.use(express.static('.'));
 
@@ -20,15 +26,21 @@ app.use(function(req, res, next) {
   if (req.secure) {
     res.setHeader('Strict-Transport-Security', 'max-age=63072000; includeSubDomains'); // 2 years
   }
-  next(); 
+  return next(); 
 })
 
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
+  return res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 app.get('/video', (req, res) => {
-  if(!req.headers.range) return res.end('"please provide a range"');
+  return res.json({id: ID});
+})
+
+app.get('/'+ID, (req, res) => {
+  if(!req.headers.range) {
+    return res.end('"please provide a range"');
+  }
   const start = Number(req.headers.range.replace(/\D/g, ''));
   const chunk = 512000; //512kb
   const end = Math.min(start + chunk, size - 1);
@@ -38,19 +50,21 @@ app.get('/video', (req, res) => {
     'Content-Length': length,
     'Accept-Ranges': 'bytes',
     'Content-Range': `bytes ${start}-${end}/${size}`,
+    'Cache-Control': 'no-store'
   });
-  fs.createReadStream(video, {start, end}).pipe(res);
+  return fs.createReadStream(video, {start, end}).pipe(res);
+  // res.sendFile(path.resolve(video));
 });
 
 app.get('/subtitle', (req, res) => {
-  res.end(subtitle);
+  return res.end(subtitle);
 });
 
-// const server = app.listen(3000, () => console.log('http server started at 3000'));
+const server = app.listen(3000, () => console.log('http server started at 3000'));
 
 const socket = require('socket.io');
 
-// const io = socket(server);
+const io = socket(server);
 
 const socketHandler = (socket) => {
    
@@ -75,7 +89,7 @@ const socketHandler = (socket) => {
   });
 }
 
-// io.on('connection', socketHandler);
+io.on('connection', socketHandler);
 
 const cert = fs.readFileSync('ca-bundle.txt');
 const key = fs.readFileSync('private-key.txt');
