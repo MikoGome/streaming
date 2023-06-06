@@ -80,8 +80,8 @@ const socketHandler = (socket) => {
     socket.broadcast.emit('play', currentTime);
   });
 
-  socket.on('pause', () => {
-    socket.broadcast.emit('pause');
+  socket.on('pause', (currentTime) => {
+    socket.broadcast.emit('pause', currentTime);
   });
 
   socket.on('updateTime', (currentTime) => {

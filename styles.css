@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@500&display=swap');
+
 * {
   padding: 0;
   margin: 0;
@@ -7,6 +9,7 @@
 :root {
   --text-shadow-blur: 2px;
   --text-color: white;
+  --player-height: 0;
 }
 
 body {
@@ -32,7 +35,8 @@ video {
 }
 
 video::cue {
-  background: none;
+  visibility: hidden;
+  /* background: none;
   -webkit-text-stroke: 2px black;
   font-size: 75%;
   color: var(--text-color);
@@ -44,7 +48,7 @@ video::cue {
         2px 0 var(--text-shadow-blur) black,
         0 2px var(--text-shadow-blur) black,
         0 -2px var(--text-shadow-blur) black,
-        -2px 0 var(--text-shadow-blur) black;
+        -2px 0 var(--text-shadow-blur) black; */
 }
 
 video::-webkit-media-controls {
@@ -72,7 +76,8 @@ main {
   position: absolute;
   bottom: 0;
   transition: opacity 0.3s linear;
-  background: linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.76))
+  background: linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.76));
+  z-index: 1;
 }
 
 .hide {
@@ -183,7 +188,7 @@ button:hover, input[type=range]:hover, #time:hover {
   right: 0;
 }
 
-.hidden {
+.subtitles.hidden {
   display: none;
 }
 
@@ -203,3 +208,75 @@ button:hover, input[type=range]:hover, #time:hover {
   }
 }
 
+.subtitle-holder {
+  transition: all 0.2s;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+  user-select: none;
+  text-align: center;
+  bottom: 5%;
+  position: absolute;
+  width: 100%;
+  font-size: 1.75rem;
+  color: var(--text-color);
+  text-shadow: 
+  -2px 2px var(--text-shadow-blur) black,
+  2px 2px var(--text-shadow-blur) black,
+  2px -2px var(--text-shadow-blur) black,
+  -2px -2px var(--text-shadow-blur) black,
+  2px 0 var(--text-shadow-blur) black,
+  0 2px var(--text-shadow-blur) black,
+  0 -2px var(--text-shadow-blur) black,
+  -2px 0 var(--text-shadow-blur) black;
+}
+
+.sub-top {
+  top: 5%;
+  bottom: unset;
+}
+
+.sub-center {
+  top: 50%;
+  bottom: unset;
+  transform: translateY(-50%);
+}
+
+.subtitles {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 80%;
+  white-space: pre-wrap;
+}
+
+#sub-1, #sub-4, #sub-7 {
+  align-items: flex-start;
+}
+
+#sub-2, #sub-5, #sub-8 {
+  align-items: center;
+}
+
+#sub-3, #sub-6, #sub-9 {
+  align-items: flex-end;
+}
+
+.subtitle-holder.fullscreen {
+  font-size: 2.75rem;
+  bottom: calc(var(--player-height) + 5px);
+}
+
+.subtitle-holder.fullscreen.sub-center {
+  bottom: unset;
+}
+
+.subtitle-holder.fullscreen.sub-top {
+  top: calc(var(--player-height) + 5px);
+  bottom: unset;
+}
+
+.raise:not(.fullscreen) {
+  bottom: var(--player-height);
+}

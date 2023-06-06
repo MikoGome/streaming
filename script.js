@@ -15,6 +15,7 @@ fetch('/video')
 
 function togglePlay() {
   if(video.paused) {
+    pause.willPause = false;
     video.play();
     playButton.innerHTML = `
       <svg class="pause-icon" viewBox="0 0 24 24">
@@ -29,7 +30,7 @@ function togglePlay() {
         <path fill="currentColor" d="M8,5.14V19.14L19,12.14L8,5.14Z" />
       </svg>
     `
-    if(socket) socket.emit('pause');
+    if(socket) socket.emit('pause', video.currentTime);
   }
 }
 
@@ -71,6 +72,12 @@ subtitleColorButton.addEventListener('click', () => {
   }
 });
 
+
+const pause = {
+  time: 0,
+  willPause: false
+} 
+
 document.body.addEventListener('connect', (e) => {
   const socket = e.detail;
   const id = socket.id;
@@ -101,7 +108,7 @@ document.body.addEventListener('connect', (e) => {
   });
 
   socket.on('play', (currentTime) => {
-    video.currentTime = currentTime;
+    pause.willPause = false;
     video.play();
     playButton.innerHTML = `
     <svg class="pause-icon" viewBox="0 0 24 24">
@@ -110,9 +117,10 @@ document.body.addEventListener('connect', (e) => {
   `
   });
   
-  socket.on('pause', () => {
+  socket.on('pause', (pauseTime) => {
     if(video.paused) return;
-    video.pause();
+    pause.time = pauseTime;
+    pause.willPause = true;
     playButton.innerHTML = `
     <svg class="play-icon" viewBox="0 0 24 24">
       <path fill="currentColor" d="M8,5.14V19.14L19,12.14L8,5.14Z" />
@@ -123,6 +131,11 @@ document.body.addEventListener('connect', (e) => {
   socket.on('updateTime', (currentTime) => {
     video.currentTime = currentTime;
   });
+});
+
+video.addEventListener('play', () => {
+  pause.time = 0;
+  pause.willPause = false;
 });
 
 document.body.addEventListener('keydown', (e) => {
@@ -159,6 +172,10 @@ video.addEventListener('timeupdate', () => {
   time.innerText = timeString();
   if(isChangingTime) return;
   input.value = video.currentTime;
+  if(pause.willPause && video.currentTime >= pause.time) {
+    video.pause();
+    video.currentTime = pause.time;
+  }
 });
 
 //controls
@@ -170,61 +187,70 @@ const fullscreenButton = document.getElementById('fullscreen');
 const subtitleButton = document.getElementById('subtitle');
 const main = document.querySelector('main');
 const track = document.querySelector('track');
+const subtitleHolder = document.querySelector('.subtitle-holder');
+const subtitleHolders = document.querySelectorAll('.subtitle-holder');
+
+
 
 track.addEventListener('load', () => {
-  const cues = track.track.cues;
-  const base = -1;
-  for(let i = 0; i < cues.length; i++) {
-    const cue = cues[i];
-    cue.text = cue.text.replace('{\\an8}','');
-    cue.line = base;
-    const lines = cue.text.match(/\n/g)?.length || 0;
-    const barBase = video.videoHeight === 1080 ? base-lines - 2 : base - 3;
-    cue.addEventListener('update', (e) => {
-      cue.track.mode = 'hidden';
-      if(document.fullscreenElement === main) {
-        cue.line = barBase;
-      } else if(e.detail) {
-        cue.line = base-lines;
-      } else {
-        cue.line = barBase-lines;
+  if(!track.track.cues.length) return;
+  function subAppear() {
+    const subtitles = document.querySelectorAll('.subtitles');
+    subtitles.forEach(subtitle => {
+      while(subtitle.firstChild) {
+        subtitle.firstChild.remove();
       }
-      cue.track.mode = 'showing';
+      subtitle.classList.add('hidden');
     });
-    
-    cue.onenter = () => {
-      cue.track.mode = 'hidden';
-      if(document.fullscreenElement === main) {
-        cue.line = barBase;
-      } else if(player.classList.contains('hide')) {
-        cue.line = base-lines;
-      } else {
-        cue.line = barBase-lines;
+    for(const cue of track.track.activeCues) {
+      let sub = document.querySelector('#sub-2');
+      let text = cue.text;
+      if(/{\\an.}/.test(text)) {
+        const num = Number(text.match(/{\\an.}/g).join('').replace(/\D/g, ''));
+        sub = document.querySelector('#sub-'+num);
+        text = text.replace(/{\\an.}/, '');
       }
-      cue.track.mode = 'showing';
-
+      const subContent = document.createElement('p');
+      subContent.innerHTML += text;
+      sub.append(subContent);
+      sub.classList.remove('hidden');
     }
   }
-}, {once: true});
+  
+  subAppear();
+  track.track.oncuechange = subAppear;
+});
 
 function toggleFullscreen() {
   if(document.fullscreenElement === null) {
     main.requestFullscreen();
+  } else if(document.fullscreenElement === main) {
+    document.exitFullscreen();
+  }
+  fullscreenButton.classList.toggle('active', !document.fullscreenElement);
+}
+
+document.addEventListener('fullscreenchange', () => {
+  if(document.fullscreenElement) {
+    subtitleHolders.forEach(subtitleHolder => {
+      subtitleHolder.classList.add('fullscreen');
+    });
     fullscreenButton.innerHTML = `
       <svg class="close" viewBox="0 0 24 24">
         <path fill="currentColor" d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/>
       </svg>
     `
-  } else if(document.fullscreenElement === main) {
-    document.exitFullscreen();
+  } else {
+    subtitleHolders.forEach(subtitleHolder => {
+      subtitleHolder.classList.remove('fullscreen');
+    });
     fullscreenButton.innerHTML = `
       <svg class="open" viewBox="0 0 24 24">
         <path fill="currentColor" d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
       </svg>
     `
   }
-  fullscreenButton.classList.toggle('active', !document.fullscreenElement);
-}
+});
 
 video.addEventListener('loadedmetadata', () => {
   input.setAttribute('max', video.duration);
@@ -279,6 +305,9 @@ subtitleButton.addEventListener('click', () => {
   const mode = video.textTracks[0].mode;
   const output = mode === 'showing' ? 'disabled' : 'showing';
   video.textTracks[0].mode = output;
+  document.querySelectorAll('.subtitles').forEach(sub => {
+    sub.classList.toggle('hidden', !(output === 'showing'));
+  });
   subtitleButton.classList.toggle('active', output === 'showing');
 });
 
@@ -384,24 +413,22 @@ player.addEventListener('mousemove', (e) => {
 });
 
 player.addEventListener('hide', (e) => {
+  document.documentElement.style.setProperty('--player-height', `${player.clientHeight}px`);
   const flag = e.detail;
   player.classList.toggle('hide', flag);
-  if(!track.track.activeCues) return;
-  for(const cue of track.track.activeCues) {
-    cue.dispatchEvent(new CustomEvent('update', {detail: flag}));
-  }
+  subtitleHolder.classList.toggle('raise', !flag);
 });
 
 player.addEventListener('dblclick', (e) => {
   e.stopPropagation();
 });
 
-document.addEventListener('fullscreenchange', () => {
-  if(!track.track.activeCues) return;
-  for(const cue of track.track.activeCues) {
-    cue.dispatchEvent(new CustomEvent('update', {detail: player.classList.contains('hide')}));
-  }
-});
+// document.addEventListener('fullscreenchange', () => {
+//   if(!track.track.activeCues) return;
+//   for(const cue of track.track.activeCues) {
+//     cue.dispatchEvent(new CustomEvent('update', {detail: player.classList.contains('hide')}));
+//   }
+// });
 
 video.addEventListener('loadeddata', () => {
   syncButton.classList.remove('hidden');
