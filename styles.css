@@ -1,0 +1,298 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@500&display=swap');
+
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --text-shadow-blur: 2px;
+  --text-color: white;
+  --player-height: 0;
+}
+
+body {
+  display: flex;
+  font-family: Arial, Helvetica, sans-serif;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  /* background-color: rgb(36, 36, 36); */
+  background: url('./background.jpg');
+  background-size: cover;
+  background-position: center center;
+  overflow-y: hidden;
+}
+
+video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background-color: black;
+  display: block;
+}
+
+video::cue {
+  visibility: hidden;
+  /* background: none;
+  -webkit-text-stroke: 2px black;
+  font-size: 75%;
+  color: var(--text-color);
+  text-shadow: 
+        -2px 2px var(--text-shadow-blur) black,
+        2px 2px var(--text-shadow-blur) black,
+        2px -2px var(--text-shadow-blur) black,
+        -2px -2px var(--text-shadow-blur) black,
+        2px 0 var(--text-shadow-blur) black,
+        0 2px var(--text-shadow-blur) black,
+        0 -2px var(--text-shadow-blur) black,
+        -2px 0 var(--text-shadow-blur) black; */
+}
+
+video::-webkit-media-controls {
+  /* display:none !important; */
+}
+video::-webkit-media-controls-enclosure {
+  /* display:none !important; */
+}
+
+main {
+  max-width: 75%;
+  max-height: 75%;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+#player{
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  padding: 1%;
+  position: absolute;
+  bottom: 0;
+  transition: opacity 0.3s linear;
+  background: linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.76));
+  z-index: 1;
+}
+
+.hide {
+  opacity: 0;
+}
+
+.bottom {
+  display: flex;
+  justify-content: space-between;
+}
+
+.top > input {
+  width: 100%;
+}
+
+#volume {
+  display: inline-flex
+}
+
+#volume > input {
+  width: 50%;
+}
+
+#time {
+  color: white;
+  display: inline-block;
+  cursor: default;
+}
+
+.svg-container {
+  width: 30px;
+  margin: 0 10px;
+  background: transparent;
+  color: white;
+  border: none;
+}
+
+.left {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+
+main button, input[type=range], #time{
+  filter: brightness(0.75);
+}
+
+button, input[type=range] {
+  cursor: pointer;
+}
+
+button:hover, input[type=range]:hover, #time:hover {
+  filter: brightness(1);
+}
+
+.active {
+  filter: brightness(2);
+}
+
+.cursor-none {
+  cursor: none;
+}
+
+#sync, #subtitle-color {
+  background: white;
+  padding: 5px 10px;
+  transition: all 0.25s;
+  border: 2px solid black;
+  /* border-radius: 5px; */
+}
+
+#sync:hover, #subtitle-color:hover {
+  filter: brightness(1.1);
+  transform: scale(1.1);
+}
+
+
+#sync.green {
+  background: rgb(0, 160, 0);
+  border-color: darkgreen;
+  animation: syncing 1s linear infinite;
+  animation-direction: alternate;
+  color: black;
+}
+
+@keyframes syncing {
+  from {background-color: rgb(0, 160, 0)}
+  to {background-color: rgb(0, 255, 0);}
+}
+
+#subtitle-color.yellow {
+  background-color: yellow;
+}
+
+#subtitle::after {
+  content: " ";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  right: 50%;
+  background-color: var(--text-color);
+  height: 3px;
+  transition: all 0.25s ease-out;
+}
+
+#subtitle.active::after {
+  left: 0;
+  right: 0;
+}
+
+.subtitles.hidden {
+  display: none;
+}
+
+
+.appear {
+  animation: slide-in 0.5s cubic-bezier(0.250, 0.460, 0.450, 0.940) 1s backwards;
+}
+
+@keyframes slide-in {
+  0% {
+    transform: translateY(1000px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.subtitle-holder {
+  transition: all 0.2s;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+  user-select: none;
+  text-align: center;
+  bottom: 5%;
+  position: absolute;
+  width: 100%;
+  font-size: 1.75rem;
+  color: var(--text-color);
+  text-shadow: 
+  -2px 2px var(--text-shadow-blur) black,
+  2px 2px var(--text-shadow-blur) black,
+  2px -2px var(--text-shadow-blur) black,
+  -2px -2px var(--text-shadow-blur) black,
+  2px 0 var(--text-shadow-blur) black,
+  0 2px var(--text-shadow-blur) black,
+  0 -2px var(--text-shadow-blur) black,
+  -2px 0 var(--text-shadow-blur) black;
+}
+
+.sub-top {
+  top: 5%;
+  bottom: unset;
+}
+
+.sub-center {
+  top: 50%;
+  bottom: unset;
+  transform: translateY(-50%);
+}
+
+.subtitles {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 80%;
+  white-space: pre-wrap;
+}
+
+#sub-1, #sub-4, #sub-7 {
+  align-items: flex-start;
+}
+
+#sub-2, #sub-5, #sub-8 {
+  align-items: center;
+}
+
+#sub-3, #sub-6, #sub-9 {
+  align-items: flex-end;
+}
+
+.subtitle-holder.fullscreen {
+  font-size: 2.75rem;
+  bottom: calc(var(--player-height) + 5px);
+}
+
+.subtitle-holder.fullscreen.sub-center {
+  bottom: unset;
+}
+
+.subtitle-holder.fullscreen.sub-top {
+  top: calc(var(--player-height) + 5px);
+  bottom: unset;
+}
+
+.raise:not(.fullscreen) {
+  bottom: var(--player-height);
+}
+
+@media only screen and (max-width: 600px) {
+  div.example {
+    font-size: 30px;
+  }
+}
+
+/*THEME*/
+
+.top > input {
+  
+}
+
+#volume-range {
+  
+}
