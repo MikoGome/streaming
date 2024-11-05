@@ -1,5 +1,13 @@
 let socket = null;
 
+const currentColor = "white";
+
+document.querySelectorAll('path').forEach(el => {
+  el.setAttribute('fill', currentColor);
+});
+
+document.querySelector('#time').style.color = currentColor;
+
 const video = document.querySelector('video');
 const subtitleColorButton = document.getElementById('subtitle-color');
 const syncButton = document.getElementById('sync');
@@ -12,6 +20,8 @@ fetch('/video')
   source.setAttribute('src', id);
   video.load();
   video.dispatchEvent(new Event('appear'));
+  document.querySelector('h1').innerText = decodeURIComponent(id).replace(/^\[.*?\]|\.\w+$/g, '').trim();
+  document.querySelector('h1').classList.add('appear');
 });
 
 function togglePlay() {
@@ -20,7 +30,7 @@ function togglePlay() {
     video.play();
     playButton.innerHTML = `
       <svg class="pause-icon" viewBox="0 0 24 24">
-        <path fill="currentColor" d="M14,19H18V5H14M6,19H10V5H6V19Z" />
+        <path fill="${currentColor}" d="M14,19H18V5H14M6,19H10V5H6V19Z" />
       </svg>
     `
     if(socket) socket.emit('play', video.currentTime);
@@ -28,7 +38,7 @@ function togglePlay() {
     video.pause();
     playButton.innerHTML = `
       <svg class="play-icon" viewBox="0 0 24 24">
-        <path fill="currentColor" d="M8,5.14V19.14L19,12.14L8,5.14Z" />
+        <path fill="${currentColor}" d="M8,5.14V19.14L19,12.14L8,5.14Z" />
       </svg>
     `
     if(socket) socket.emit('pause', video.currentTime);
@@ -95,14 +105,14 @@ document.body.addEventListener('connect', (e) => {
       video.pause();
       playButton.innerHTML = `
       <svg class="play-icon" viewBox="0 0 24 24">
-        <path fill="currentColor" d="M8,5.14V19.14L19,12.14L8,5.14Z" />
+        <path fill="${currentColor}" d="M8,5.14V19.14L19,12.14L8,5.14Z" />
       </svg>
       `
     } else {
       video.play();
       playButton.innerHTML = `
       <svg class="pause-icon" viewBox="0 0 24 24">
-        <path fill="currentColor" d="M14,19H18V5H14M6,19H10V5H6V19Z" />
+        <path fill="${currentColor}" d="M14,19H18V5H14M6,19H10V5H6V19Z" />
       </svg>
       `
     }
@@ -113,7 +123,7 @@ document.body.addEventListener('connect', (e) => {
     video.play();
     playButton.innerHTML = `
     <svg class="pause-icon" viewBox="0 0 24 24">
-      <path fill="currentColor" d="M14,19H18V5H14M6,19H10V5H6V19Z" />
+      <path fill="${currentColor}" d="M14,19H18V5H14M6,19H10V5H6V19Z" />
     </svg>
   `
   });
@@ -124,7 +134,7 @@ document.body.addEventListener('connect', (e) => {
     pause.willPause = true;
     playButton.innerHTML = `
     <svg class="play-icon" viewBox="0 0 24 24">
-      <path fill="currentColor" d="M8,5.14V19.14L19,12.14L8,5.14Z" />
+      <path fill="${currentColor}" d="M8,5.14V19.14L19,12.14L8,5.14Z" />
     </svg>
   `
   });
@@ -166,6 +176,7 @@ document.body.addEventListener('keydown', (e) => {
 // });
 
 video.addEventListener('click', () => {
+  if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) return;
   togglePlay();
 });
 
@@ -244,7 +255,7 @@ document.addEventListener('fullscreenchange', () => {
     });
     fullscreenButton.innerHTML = `
       <svg class="close" viewBox="0 0 24 24">
-        <path fill="currentColor" d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/>
+        <path fill="${currentColor}" d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/>
       </svg>
     `
   } else {
@@ -253,7 +264,7 @@ document.addEventListener('fullscreenchange', () => {
     });
     fullscreenButton.innerHTML = `
       <svg class="open" viewBox="0 0 24 24">
-        <path fill="currentColor" d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
+        <path fill="${currentColor}" d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
       </svg>
     `
   }
@@ -336,6 +347,7 @@ main.addEventListener('dblclick', () => {
 });
 
 player.addEventListener('mouseenter', () => {
+  if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) return;
   mouseOnPlayer = true;
 });
 
@@ -369,7 +381,7 @@ video.addEventListener('play', () => {
 video.addEventListener('ended', () => {
   playButton.innerHTML = `
       <svg class="play-icon" viewBox="0 0 24 24">
-        <path fill="currentColor" d="M8,5.14V19.14L19,12.14L8,5.14Z" />
+        <path fill="${currentColor}" d="M8,5.14V19.14L19,12.14L8,5.14Z" />
       </svg>
     `
 });
@@ -381,14 +393,14 @@ speaker.addEventListener('click', () => {
     video.muted = false;
     speaker.innerHTML = `
       <svg class="volume-high-icon" viewBox="0 0 24 24">
-        <path fill="currentColor" d="M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.84 14,18.7V20.77C18,19.86 21,16.28 21,12C21,7.72 18,4.14 14,3.23M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16C15.5,15.29 16.5,13.76 16.5,12M3,9V15H7L12,20V4L7,9H3Z" />
+        <path fill="${currentColor}" d="M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.84 14,18.7V20.77C18,19.86 21,16.28 21,12C21,7.72 18,4.14 14,3.23M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16C15.5,15.29 16.5,13.76 16.5,12M3,9V15H7L12,20V4L7,9H3Z" />
       </svg>
     `
   } else {
     video.muted = true;
     speaker.innerHTML = `
       <svg class="volume-muted-icon" viewBox="0 0 24 24">
-        <path fill="currentColor" d="M12,4L9.91,6.09L12,8.18M4.27,3L3,4.27L7.73,9H3V15H7L12,20V13.27L16.25,17.53C15.58,18.04 14.83,18.46 14,18.7V20.77C15.38,20.45 16.63,19.82 17.68,18.96L19.73,21L21,19.73L12,10.73M19,12C19,12.94 18.8,13.82 18.46,14.64L19.97,16.15C20.62,14.91 21,13.5 21,12C21,7.72 18,4.14 14,3.23V5.29C16.89,6.15 19,8.83 19,12M16.5,12C16.5,10.23 15.5,8.71 14,7.97V10.18L16.45,12.63C16.5,12.43 16.5,12.21 16.5,12Z" />
+        <path fill="${currentColor}" d="M12,4L9.91,6.09L12,8.18M4.27,3L3,4.27L7.73,9H3V15H7L12,20V13.27L16.25,17.53C15.58,18.04 14.83,18.46 14,18.7V20.77C15.38,20.45 16.63,19.82 17.68,18.96L19.73,21L21,19.73L12,10.73M19,12C19,12.94 18.8,13.82 18.46,14.64L19.97,16.15C20.62,14.91 21,13.5 21,12C21,7.72 18,4.14 14,3.23V5.29C16.89,6.15 19,8.83 19,12M16.5,12C16.5,10.23 15.5,8.71 14,7.97V10.18L16.45,12.63C16.5,12.43 16.5,12.21 16.5,12Z" />
       </svg>
     `
   }

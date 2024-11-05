@@ -18,12 +18,11 @@ body {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  height: 100vh;
+  min-height: 100vh;
   /* background-color: rgb(36, 36, 36); */
   background: url('./background.jpg');
   background-size: cover;
   background-position: center center;
-  overflow-y: hidden;
 }
 
 video {
@@ -59,7 +58,8 @@ video::-webkit-media-controls-enclosure {
 }
 
 main {
-  max-width: 75%;
+  max-width: 100%;
+  width: 1200px;
   max-height: 75%;
   position: relative;
   display: flex;
@@ -72,7 +72,7 @@ main {
   display: flex;
   flex-direction: column;
   justify-content: space-around;
-  padding: 1%;
+  padding: 15px 5px;
   position: absolute;
   bottom: 0;
   transition: opacity 0.3s linear;
@@ -87,6 +87,7 @@ main {
 .bottom {
   display: flex;
   justify-content: space-between;
+  margin: 7px 0 0 0;
 }
 
 .top > input {
@@ -121,6 +122,11 @@ main {
   align-items: center;
 }
 
+.right {
+  display: flex;
+  justify-content: space-around;
+}
+
 main button, input[type=range], #time{
   filter: brightness(0.75);
 }
@@ -134,7 +140,7 @@ button:hover, input[type=range]:hover, #time:hover {
 }
 
 .active {
-  filter: brightness(2);
+  /*filter: brightness(2);*/
 }
 
 .cursor-none {
@@ -158,14 +164,7 @@ button:hover, input[type=range]:hover, #time:hover {
 #sync.green {
   background: rgb(0, 160, 0);
   border-color: darkgreen;
-  animation: syncing 1s linear infinite;
-  animation-direction: alternate;
   color: black;
-}
-
-@keyframes syncing {
-  from {background-color: rgb(0, 160, 0)}
-  to {background-color: rgb(0, 255, 0);}
 }
 
 #subtitle-color.yellow {
@@ -194,16 +193,16 @@ button:hover, input[type=range]:hover, #time:hover {
 
 
 .appear {
-  animation: slide-in 0.5s cubic-bezier(0.250, 0.460, 0.450, 0.940) 1s backwards;
+  animation: zoom-in 0.5s cubic-bezier(0.250, 0.460, 0.450, 0.940) 1s backwards;
 }
 
-@keyframes slide-in {
-  0% {
-    transform: translateY(1000px);
+@keyframes zoom-in {
+  from {
+    transform: scale(0);
     opacity: 0;
   }
-  100% {
-    transform: translateY(0);
+  to {
+    transform: scale(1);
     opacity: 1;
   }
 }
@@ -218,7 +217,7 @@ button:hover, input[type=range]:hover, #time:hover {
   bottom: 5%;
   position: absolute;
   width: 100%;
-  font-size: 1.75rem;
+  font-size: min(3vw, 2rem);
   color: var(--text-color);
   text-shadow: 
   -2px 2px var(--text-shadow-blur) black,
@@ -264,8 +263,8 @@ button:hover, input[type=range]:hover, #time:hover {
 }
 
 .subtitle-holder.fullscreen {
-  font-size: 2.75rem;
-  bottom: calc(var(--player-height) + 5px);
+  font-size: min(3vw, 2.75rem);
+  bottom: min(calc(var(--player-height) + 5px), 8%);
 }
 
 .subtitle-holder.fullscreen.sub-center {
@@ -287,12 +286,21 @@ button:hover, input[type=range]:hover, #time:hover {
   }
 }
 
-/*THEME*/
+h1 {
+  font-family: "Poppins", sans-serif;
+  color: #f6d8d5;
+  font-size: clamp(1rem, 3vw, 2rem);
+  margin: 10px 0;
+  text-align: center;
+}
 
+/*THEME*/
+/*
 .top > input {
-  
+  accent-color: orange;
 }
 
 #volume-range {
-  
+  accent-color: orange;  
 }
+*/
