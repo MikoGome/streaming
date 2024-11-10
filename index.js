@@ -140,7 +140,7 @@ const socket = require('socket.io');
 const io = socket(server);
 
 const socketHandler = (socket) => {
-   
+
   socket.on('follow', (id) => {
     socket.broadcast.emit('lead', id);
   });
@@ -159,6 +159,12 @@ const socketHandler = (socket) => {
 
   socket.on('updateTime', (currentTime) => {
     socket.broadcast.emit('updateTime', currentTime);
+  });
+
+  socket.on("check", (videoSrc) => {
+    if(videoSrc !== ID) {
+      socket.emit("reload")
+    }
   });
 }
 

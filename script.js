@@ -22,6 +22,19 @@ fetch('/video')
   video.dispatchEvent(new Event('appear'));
   document.querySelector('h1').innerText = decodeURIComponent(id).replace(/^\[.*?\]|\.\w+$/g, '').trim();
   document.querySelector('h1').classList.add('appear');
+
+  //initalize volume range
+  if(localStorage.getItem("volume")) {
+    volumeRange.value = localStorage.getItem("volume");
+    video.volume = volumeRange.value/100;
+  }
+  
+  if(sessionStorage.getItem("sync")) {
+    syncButton.click();
+  }
+  if(sessionStorage.getItem("subtitle")) {
+    subtitleButton.click();
+  }
 });
 
 function togglePlay() {
@@ -60,12 +73,15 @@ function timeString() {
 syncButton.addEventListener('click', () => {
   if(socket === null) {
     socket = io(location.host);
+    sessionStorage.setItem("sync", true);
     socket.on('connect', () => {
       const customEvent = new CustomEvent('connect', {detail: socket});
       document.body.dispatchEvent(customEvent);
+      socket.emit("check", document.querySelector("source").src.replace(location.href, ""));
     });
   } else {
     socket.disconnect();
+    sessionStorage.removeItem("sync");
     socket = null;
   }
   syncButton.classList.toggle('green', socket);
@@ -141,6 +157,10 @@ document.body.addEventListener('connect', (e) => {
 
   socket.on('updateTime', (currentTime) => {
     video.currentTime = currentTime;
+  });
+
+  socket.on("reload", ()=>{
+    window.location.reload()
   });
 });
 
@@ -327,6 +347,8 @@ subtitleButton.addEventListener('click', () => {
     sub.classList.toggle('hidden', !(output === 'showing'));
   });
   subtitleButton.classList.toggle('active', output === 'showing');
+  if(output === "showing") sessionStorage.setItem("subtitle", true);
+  else sessionStorage.removeItem("subtitle");
 });
 
 let timeoutID = null;
@@ -365,6 +387,8 @@ main.addEventListener('mouseleave', () => {
 const volumeRange = document.getElementById('volume-range');
 
 volumeRange.addEventListener('input', () => {
+  console.log("hit")
+  localStorage.setItem("volume", volumeRange.value);
   video.volume = volumeRange.value/100;
 });
 
