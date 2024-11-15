@@ -304,3 +304,28 @@ h1 {
   accent-color: orange;  
 }
 */
+
+
+
+/*canvas*/
+
+canvas {
+  position: absolute;
+  display: none;
+  top: 50%;
+  left: 0;
+  right: 0;
+  transform: translateY(-50%);
+}
+
+#paint {
+  opacity: 0.25;
+}
+
+#paint.active {
+  opacity: 1;
+}
+
+canvas.active {
+  display: block;
+}

@@ -77,7 +77,6 @@ syncButton.addEventListener('click', () => {
     socket.on('connect', () => {
       const customEvent = new CustomEvent('connect', {detail: socket});
       document.body.dispatchEvent(customEvent);
-      socket.emit("check", document.querySelector("source").src.replace(location.href, ""));
     });
   } else {
     socket.disconnect();
@@ -108,7 +107,11 @@ const pause = {
 document.body.addEventListener('connect', (e) => {
   const socket = e.detail;
   const id = socket.id;
+  
+  socket.emit("check", document.querySelector("source").src.replace(location.href, ""));
   socket.emit('follow', id);
+  socket.emit("getStrokeData");
+
   socket.on('lead', (id) => {
     const currentTime = video.currentTime;
     const isPaused = video.paused;
@@ -162,6 +165,20 @@ document.body.addEventListener('connect', (e) => {
   socket.on("reload", ()=>{
     window.location.reload()
   });
+
+  socket.on('receiveStrokeData', (strokeData) => {
+    drawStrokeData(strokeData);
+  });
+  
+  socket.on('erase', () => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    socket.emit('getStrokeData');
+  });
+
+  socket.on("toggleCanvas", (isOpen)=>{
+    console.log('toggleCanvas')
+    openCanvas(false, isOpen);
+  });
 });
 
 video.addEventListener('play', () => {
@@ -195,7 +212,7 @@ document.body.addEventListener('keydown', (e) => {
 //   if((e.key === 'ArrowLeft' || e.key === 'ArrowRight')) isChangingTime = false;
 // });
 
-video.addEventListener('click', () => {
+video.addEventListener('click', (e) => {
   if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) return;
   togglePlay();
 });
@@ -228,7 +245,13 @@ const track = document.querySelector('track');
 const subtitleHolder = document.querySelector('.subtitle-holder');
 const subtitleHolders = document.querySelectorAll('.subtitle-holder');
 
-
+main.addEventListener('mousedown', (e) => {
+  console.log(typeof e.button)
+  if(e.button === 1) {
+    openCanvas(socket);
+    return;
+  }
+});
 
 track.addEventListener('load', () => {
   if(!track.track.cues.length) return;
@@ -298,6 +321,17 @@ video.addEventListener('loadedmetadata', () => {
 video.addEventListener('loadedmetadata', (e) => {
   e.target.volume = volumeRange.value/100;
 });
+
+let ctx;
+let drawStrokeData;
+let canvas;
+
+video.addEventListener('loadedmetadata', () => {
+  const {ctx: tempCtx, drawStrokeData: tempDrawStrokeData, canvas: tempCanvas} = createCanvas(video.videoWidth, video.videoHeight);
+  ctx = tempCtx,
+  drawStrokeData = tempDrawStrokeData;
+  canvas = tempCanvas;
+})
 
 playButton.addEventListener('click', (e) => {
   togglePlay();
@@ -387,7 +421,6 @@ main.addEventListener('mouseleave', () => {
 const volumeRange = document.getElementById('volume-range');
 
 volumeRange.addEventListener('input', () => {
-  console.log("hit")
   localStorage.setItem("volume", volumeRange.value);
   video.volume = volumeRange.value/100;
 });
@@ -476,3 +509,128 @@ function animationEnd(el) {
 animationEnd(syncButton);
 animationEnd(main);
 animationEnd(subtitleColorButton);
+
+//canvas
+
+function createCanvas(originalWidth, originalHeight) {
+  const canvas = document.createElement('canvas');
+
+  main.appendChild(canvas);
+  const ctx = canvas.getContext('2d', {
+    willReadFrequently: true
+  });
+  
+  const initializeCanvas = (width, height) => {
+    ctx.canvas.width = width;
+    ctx.canvas.height = height;
+    ctx.lineWidth = 5;
+    ctx.lineCap = 'round';
+    ctx.shadowBlur = 3;
+    ctx.shadowColor = "black";
+    ctx.strokeStyle = "red";
+  }
+  
+  initializeCanvas(originalWidth, originalHeight);
+  
+  
+  let isDrawing = false;
+  
+  const strokeData = [];
+  
+  let myPath;
+
+  let scaleWidth = 1;
+  let scaleHeight = 1;
+  
+  canvas.addEventListener('mousedown', (e)=> {
+    if(e.button !== 0) return;
+    isDrawing = true;
+    myPath = new Path2D();
+    const x = e.offsetX;
+    const y = e.offsetY;
+    myPath.moveTo(x, y);
+    myPath.lineTo(x, y);
+    ctx.stroke(myPath);
+    strokeData.push([x / scaleWidth, y / scaleHeight]);
+  });
+  
+  canvas.addEventListener('mouseup', () => {
+    isDrawing = false;
+    if(socket) socket.emit('sendStrokeData', strokeData);
+    strokeData.length = 0;
+  });
+  
+  canvas.addEventListener('mouseleave', () => {
+    isDrawing = false;
+    if(socket) socket.emit('sendStrokeData', strokeData);
+    strokeData.length = 0;
+  })
+  
+  canvas.addEventListener('mousemove', (e) => {
+    if(!isDrawing) return;
+    const x = e.offsetX;
+    const y = e.offsetY;
+    myPath.lineTo(x, y);
+    ctx.stroke(myPath);
+    strokeData.push([x / scaleWidth, y / scaleHeight]);
+  });
+  
+  canvas.addEventListener('contextmenu', (e) => {
+    e.preventDefault();
+    if(socket) socket.emit('erase');
+  });
+  
+  let otherPath;
+  
+  const drawStrokeData = (strokeData) => {
+    strokeData.forEach(([x,y], index) => {
+      if(index === 0) {
+        otherPath = new Path2D();
+        otherPath.moveTo(x * scaleWidth, y * scaleHeight);
+        otherPath.lineTo(x * scaleWidth, y * scaleHeight);
+        ctx.stroke(otherPath);
+        return;
+      }
+      otherPath.lineTo(x * scaleWidth, y * scaleHeight);
+      ctx.stroke(otherPath);
+    });
+  }
+
+  let setTimeoutID = null;
+  
+  const resizeCanvas = (width, height) => {
+    initializeCanvas(width, height);
+    scaleWidth = width/originalWidth;
+    scaleHeight = height/originalHeight;
+    clearTimeout(setTimeoutID);
+    setTimeout(() => {
+      if(socket) socket.emit('getStrokeData');
+    }, 500)
+  }
+
+  const resizeObserver = new ResizeObserver((entries) => {
+    if(entries[0].target === video) {
+      resizeCanvas(video.clientWidth, video.clientWidth * (video.videoHeight/video.videoWidth));
+    }
+  })
+  
+  resizeObserver.observe(video)
+
+  return {
+    canvas,
+    ctx,
+    drawStrokeData
+  }
+}
+
+const paintButton = document.querySelector("#paint");
+
+paintButton.addEventListener('click', () => {
+  openCanvas(socket);
+});
+
+function openCanvas(willEmit, isOpen) {
+  canvas.classList.toggle('active', isOpen);
+  paintButton.classList.toggle('active', canvas.classList.contains('active'));
+  if(willEmit) socket.emit("toggleCanvas", canvas.classList.contains('active'));
+}
