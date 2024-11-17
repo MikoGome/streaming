@@ -246,7 +246,6 @@ const subtitleHolder = document.querySelector('.subtitle-holder');
 const subtitleHolders = document.querySelectorAll('.subtitle-holder');
 
 main.addEventListener('mousedown', (e) => {
-  console.log(typeof e.button)
   if(e.button === 1) {
     openCanvas(socket);
     return;
@@ -578,6 +577,7 @@ function createCanvas(originalWidth, originalHeight) {
   canvas.addEventListener('contextmenu', (e) => {
     e.preventDefault();
     if(socket) socket.emit('erase');
+    else ctx.clearRect(0, 0, canvas.width, canvas.height);
   });
   
   let otherPath;
