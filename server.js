@@ -210,7 +210,26 @@ const socketHandler = (socket) => {
   socket.on("toggleCanvas", (isOpen) => {
     socket.broadcast.emit("toggleCanvas", isOpen)
   });
+
+  socket.on("castVote", (score) => {
+    score=Number(score);
+    if(!score) return;
+    for(let i = 0; i < votes.length; i++) {
+      if(votes[i].id === socket.id) {
+        votes[i].score = score;
+        return;
+      }
+    }
+
+    votes.push({
+      id: socket.id,
+      score,
+    })
+  });
 }
+
+//vote
+const votes = [];
 
 io.on('connection', socketHandler);
 
@@ -222,3 +241,26 @@ io.on('connection', socketHandler);
 //const io2 = socket(server2);
 
 //io2.on('connection', socketHandler);
+
+const readline = require("readline");
+
+readline.emitKeypressEvents(process.stdin);
+
+process.stdin.on("keypress", (ch, key)=>{
+  if(!key) return;
+
+  switch(key.name) {
+    case "v":
+      votes.length=0;
+      io.emit("startVote")
+      break;
+    case "f":
+      let average = 0;
+      votes.forEach(vote => {
+        average += vote.score;
+      })
+      const avgScore = average/votes.length;
+      io.emit("displayScore", avgScore.toFixed(2))
+      break;
+  }
+});

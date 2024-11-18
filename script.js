@@ -176,10 +176,112 @@ document.body.addEventListener('connect', (e) => {
   });
 
   socket.on("toggleCanvas", (isOpen)=>{
-    console.log('toggleCanvas')
     openCanvas(false, isOpen);
   });
+
+  socket.on("startVote", ()=> {
+    startVote();
+  });
+
+  socket.on("displayScore", (avgScore) => {
+    displayScore(avgScore);
+  });
+
 });
+
+function displayScore(score) {
+  score=parseFloat(score);
+  const div = document.createElement("div");
+  const form = document.createElement("form");
+  const container = document.createElement("div");
+  container.setAttribute("id", "score")
+
+  const h1=document.createElement("h1");
+  h1.innerText=score
+  let description = "masterpiece";
+  if(score < 10) description = "fantastic";
+  if(score < 9.5) description = "great";
+  if(score < 9) description = "good";
+  if(score < 8) description = "ok";
+  if(score < 7) description = "mediocre";
+  if(score < 6) description = "poor";
+  if(score < 5) description = "bad";
+  if(score < 4) description = "horrible";
+  if(score < 3) description = "appalling";
+  if(score < 2) description = "shit";
+
+  const scoreDescription = document.createElement("span");
+  scoreDescription.innerText=description;
+  
+  div.setAttribute("id", "voteboard")
+  div.append(container);
+  container.append(h1);
+  container.append(scoreDescription);
+  
+  div.classList.add("animate-darken");
+  container.classList.add("animate-slidedown");
+
+  div.addEventListener("animationend", () => {
+    h1.classList.add("textappear");
+    h1.addEventListener("animationend", ()=>{
+      scoreDescription.classList.add("textappear");
+    }, {once: true});
+  }, {once: true})
+
+  div.addEventListener("click", (e)=>{
+    e.preventDefault();
+    div.classList.remove("animate-darken");
+    container.classList.remove("animate-slidedown");
+    void div.offsetWidth;
+    div.classList.add('animate-reverse', "animate-darken");
+    container.classList.add("animate-reverse", "animate-slidedown");
+    div.addEventListener("animationend", () => div.remove());
+  });
+
+  main.append(div)
+}
+
+function startVote() {
+  const div = document.createElement("div");
+  const form = document.createElement("form");
+  const input = document.createElement("input");
+  const submit = document.createElement("button");
+
+  const h1=document.createElement("h1");
+  h1.innerText="What is your score?"
+
+  submit.innerText = "SUBMIT";
+  
+
+  div.setAttribute("id", "voteboard")
+  div.append(form);
+  form.append(h1);
+  form.append(input);
+  form.append(submit);
+
+  div.classList.add("animate-darken");
+  form.classList.add("animate-slidedown");
+
+
+  input.setAttribute("type", "number");
+  input.setAttribute("min", 1);
+  input.setAttribute("max", 10);
+  input.setAttribute("step", 0.5);
+  input.setAttribute("name", "vote");
+
+  form.addEventListener("submit", (e)=>{
+    e.preventDefault();
+    if(socket) socket.emit("castVote", e.target.vote.value);
+    div.classList.remove("animate-darken");
+    form.classList.remove("animate-slidedown");
+    void div.offsetWidth;
+    div.classList.add('animate-reverse', "animate-darken");
+    form.classList.add("animate-reverse", "animate-slidedown");
+    div.addEventListener("animationend", () => div.remove());
+  });
+
+  main.append(div)
+}
 
 video.addEventListener('play', () => {
   pause.time = 0;
@@ -630,6 +732,7 @@ paintButton.addEventListener('click', () => {
 });
 
 function openCanvas(willEmit, isOpen) {
+  if(!isOpen) canvas.dispatchEvent(new Event("mouseup"));
   canvas.classList.toggle('active', isOpen);
   paintButton.classList.toggle('active', canvas.classList.contains('active'));
   if(willEmit) socket.emit("toggleCanvas", canvas.classList.contains('active'));
