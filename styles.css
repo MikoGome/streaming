@@ -380,7 +380,9 @@ canvas.active {
   flex-direction: column;
   align-items: center;
   padding: 20px;
-  min-height: 50%;
+  height: 460px;
+  max-height: 75%;
+  max-width: 75%;
   aspect-ratio: 1/1;
 }
 
@@ -427,13 +429,30 @@ canvas.active {
 }
 
 #score > h1 {
-  font-size: max(10vw, 6rem);
+  font-size: max(10vw, 5rem);
   opacity: 0;
 }
 
 #score > span {
   font-size: 2rem;
   opacity: 0;
+}
+
+#score ul {
+  position: absolute;
+  top: 0;
+  right: 0%;
+  /* transform: translate(-100%, 20px); */
+  list-style-type: none;
+  font-size: 2rem;
+  margin: 20px;
+}
+
+#score ul > li {
+  font-size: 2rem;
+  opacity: 0;
+  animation-duration: 1s;
+  text-align: end;
 }
 
 @keyframes textappear{
@@ -448,5 +467,5 @@ canvas.active {
 }
 
 span.textappear {
-  animation-duration: 1s;
+  animation-duration: 0.5s;
 }

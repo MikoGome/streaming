@@ -163,7 +163,7 @@ document.body.addEventListener('connect', (e) => {
   });
 
   socket.on("reload", ()=>{
-    window.location.reload()
+    window.location.reload(true)
   });
 
   socket.on('receiveStrokeData', (strokeData) => {
@@ -183,14 +183,14 @@ document.body.addEventListener('connect', (e) => {
     startVote();
   });
 
-  socket.on("displayScore", (avgScore) => {
-    displayScore(avgScore);
+  socket.on("displayScore", (scores) => {
+    displayScore(scores.map(({score}) => score));
   });
 
 });
 
-function displayScore(score) {
-  score=parseFloat(score);
+function displayScore(scores) {
+  const score=parseFloat(scores.reduce((a,b) => a + b)/scores.length);
   const div = document.createElement("div");
   const form = document.createElement("form");
   const container = document.createElement("div");
@@ -198,11 +198,12 @@ function displayScore(score) {
 
   const h1=document.createElement("h1");
   h1.innerText=score
-  let description = "masterpiece";
-  if(score < 10) description = "fantastic";
-  if(score < 9.5) description = "great";
-  if(score < 9) description = "good";
-  if(score < 8) description = "ok";
+  let description = "";
+  if(score === 10) description = "masterpiece";
+  if(score < 10) description = "exceptional";
+  if(score < 9.5) description = "fantastic";
+  if(score < 9) description = "great";
+  if(score < 8) description = "good";
   if(score < 7) description = "mediocre";
   if(score < 6) description = "poor";
   if(score < 5) description = "bad";
@@ -212,21 +213,47 @@ function displayScore(score) {
 
   const scoreDescription = document.createElement("span");
   scoreDescription.innerText=description;
+
+
+  const scoresList = document.createElement("ul");
+  scores.forEach((score) => {
+    const li = document.createElement("li");
+    li.innerText = score;
+    scoresList.append(li);
+  });
+  
+
+  function animateScores(scores, i=0) {
+    if(i >= scores.length) {
+      h1.classList.add("textappear");
+      h1.addEventListener("animationend", ()=>{
+        scoreDescription.classList.add("textappear");
+      }, {once: true});
+      return;
+    };
+    
+    const score = scores[i];
+    score.classList.add("textappear");
+    score.addEventListener("animationend", ()=>{
+      animateScores(scores, i + 1);
+    }, {once:true});
+  }
+  
+  
   
   div.setAttribute("id", "voteboard")
   div.append(container);
   container.append(h1);
   container.append(scoreDescription);
+  container.append(scoresList);
+  
+  div.addEventListener("animationend", () => {
+    animateScores(scoresList.children, 0);
+  }, {once: true});
   
   div.classList.add("animate-darken");
   container.classList.add("animate-slidedown");
-
-  div.addEventListener("animationend", () => {
-    h1.classList.add("textappear");
-    h1.addEventListener("animationend", ()=>{
-      scoreDescription.classList.add("textappear");
-    }, {once: true});
-  }, {once: true})
+  
 
   div.addEventListener("click", (e)=>{
     e.preventDefault();

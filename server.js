@@ -225,6 +225,8 @@ const socketHandler = (socket) => {
       id: socket.id,
       score,
     })
+
+    console.log(votes.length + " scores casted");
   });
 }
 
@@ -255,12 +257,7 @@ process.stdin.on("keypress", (ch, key)=>{
       io.emit("startVote")
       break;
     case "f":
-      let average = 0;
-      votes.forEach(vote => {
-        average += vote.score;
-      })
-      const avgScore = average/votes.length;
-      io.emit("displayScore", avgScore.toFixed(2))
+      io.emit("displayScore", votes);
       break;
   }
 });
