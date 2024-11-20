@@ -190,7 +190,7 @@ document.body.addEventListener('connect', (e) => {
 });
 
 function displayScore(scores) {
-  const score=parseFloat(scores.reduce((a,b) => a + b)/scores.length);
+  const score=parseFloat(scores.reduce((a,b) => a + b)/scores.length).toFixed(2);
   const div = document.createElement("div");
   const form = document.createElement("form");
   const container = document.createElement("div");
