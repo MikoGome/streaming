@@ -431,6 +431,8 @@ canvas.active {
 #score > h1 {
   font-size: max(10vw, 5rem);
   opacity: 0;
+  width: 100%;
+  text-align: center;
 }
 
 #score > span {
