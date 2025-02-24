@@ -61,6 +61,7 @@ main {
   max-width: 100%;
   width: 1200px;
   max-height: 75%;
+  margin: 25px 0;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -288,22 +289,18 @@ button:hover, input[type=range]:hover, #time:hover {
 
 #title {
   font-family: "Poppins", sans-serif;
-  color: #f6d8d5;
+  color: #fb4142;
   font-size: clamp(1rem, 3vw, 2rem);
-  margin: 10px 0;
+  margin: 30px 0;
   text-align: center;
 }
 
-/*THEME*/
-/*
+/* THEME*/
 .top > input {
-  accent-color: orange;
 }
 
 #volume-range {
-  accent-color: orange;  
 }
-*/
 
 
 
@@ -321,7 +318,11 @@ canvas {
 }
 
 #paint {
-  opacity: 0.25;
+  opacity: 0.50;
+  margin: 0 10px;
+  background-color: transparent;
+  outline: none;
+  border: none; 
 }
 
 #paint.active {

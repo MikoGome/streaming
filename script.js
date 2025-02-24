@@ -163,7 +163,17 @@ document.body.addEventListener('connect', (e) => {
   });
 
   socket.on("reload", ()=>{
-    window.location.reload(true)
+    fetch('/video')
+      .then(res => res.json())
+      .then(data => {
+      const {id} = data;
+      const source = document.querySelector('source');
+      source.setAttribute('src', id);
+      video.load();
+      video.dispatchEvent(new Event('appear'));
+      document.querySelector('h1').innerText = decodeURIComponent(id).replace(/^\[.*?\]|\.\w+$/g, '').trim();
+      document.querySelector('h1').classList.add('appear');
+    });
   });
 
   socket.on('receiveStrokeData', (strokeData) => {
@@ -306,8 +316,12 @@ function startVote() {
     form.classList.add("animate-reverse", "animate-slidedown");
     div.addEventListener("animationend", () => div.remove());
   });
+  
+  div.addEventListener('dblclick', (e)=> {
+    e.stopPropagation();
+  });
 
-  main.append(div)
+  main.append(div);
 }
 
 video.addEventListener('play', () => {
@@ -323,6 +337,7 @@ document.body.addEventListener('keydown', (e) => {
 
     if(socket) socket.emit('updateTime', video.currentTime);
   } else if(e.key === ' ') {
+    e.target.blur();
     togglePlay();
   } else if(e.key.toLowerCase() === 'f') {
     toggleFullscreen();
@@ -413,6 +428,9 @@ track.addEventListener('load', () => {
 function toggleFullscreen() {
   if(document.fullscreenElement === null) {
     main.requestFullscreen();
+    mouseOnPlayer = false;
+    player.dispatchEvent(new CustomEvent('hide', {detail: true}));
+    main.classList.add('cursor-none');
   } else if(document.fullscreenElement === main) {
     document.exitFullscreen();
   }
@@ -593,7 +611,7 @@ speaker.addEventListener('click', () => {
 
 document.querySelectorAll('button, input[type=range]').forEach(button => {
   button.addEventListener('focus', (e) => {
-    e.target.blur();
+    //e.target.blur();
   });
 });
 
@@ -604,7 +622,7 @@ main.addEventListener('mousemove', (e) => {
   main.classList.remove('cursor-none');
   cursorClearTimeoutID = setTimeout(() => {
     main.classList.add('cursor-none');
-  }, 5000);
+  }, timeoutDuration);
 }, {capture: true});
 
 player.addEventListener('mousemove', (e) => {
