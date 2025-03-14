@@ -29,9 +29,6 @@ fetch('/video')
     video.volume = volumeRange.value/100;
   }
   
-  if(sessionStorage.getItem("sync")) {
-    syncButton.click();
-  }
   if(sessionStorage.getItem("subtitle")) {
     subtitleButton.click();
   }
@@ -73,7 +70,6 @@ function timeString() {
 syncButton.addEventListener('click', () => {
   if(socket === null) {
     socket = io(location.host);
-    sessionStorage.setItem("sync", true);
     socket.on('connect', () => {
       const customEvent = new CustomEvent('connect', {detail: socket});
       document.body.dispatchEvent(customEvent);
@@ -170,9 +166,7 @@ document.body.addEventListener('connect', (e) => {
       const source = document.querySelector('source');
       source.setAttribute('src', id);
       video.load();
-      video.dispatchEvent(new Event('appear'));
       document.querySelector('h1').innerText = decodeURIComponent(id).replace(/^\[.*?\]|\.\w+$/g, '').trim();
-      document.querySelector('h1').classList.add('appear');
     });
   });
 
@@ -397,7 +391,10 @@ main.addEventListener('mousedown', (e) => {
 });
 
 track.addEventListener('load', () => {
-  if(!track.track.cues.length) return;
+  if(!track.track.cues.length) {
+    return;
+  }
+
   function subAppear() {
     const subtitles = document.querySelectorAll('.subtitles');
     subtitles.forEach(subtitle => {
@@ -462,6 +459,8 @@ document.addEventListener('fullscreenchange', () => {
 video.addEventListener('loadedmetadata', () => {
   input.setAttribute('max', video.duration);
   time.innerText = timeString();
+  track.src = '';
+  track.src = "subtitle";
 });
 
 video.addEventListener('loadedmetadata', (e) => {
@@ -687,9 +686,13 @@ function createCanvas(originalWidth, originalHeight) {
 
   let scaleWidth = 1;
   let scaleHeight = 1;
-  
-  canvas.addEventListener('mousedown', (e)=> {
-    if(e.button !== 0) return;
+
+  function startDraw(e) {
+    if(e.touches.length > 1) {
+      erase(e);
+    }
+
+    if(e.touches.length != 1 && e.button !== 0) return;
     isDrawing = true;
     myPath = new Path2D();
     const x = e.offsetX;
@@ -698,34 +701,55 @@ function createCanvas(originalWidth, originalHeight) {
     myPath.lineTo(x, y);
     ctx.stroke(myPath);
     strokeData.push([x / scaleWidth, y / scaleHeight]);
-  });
+  }
   
-  canvas.addEventListener('mouseup', () => {
+  canvas.addEventListener('mousedown', startDraw);
+  canvas.addEventListener('touchstart', startDraw);
+
+  function endDraw(e) {
     isDrawing = false;
     if(socket) socket.emit('sendStrokeData', strokeData);
     strokeData.length = 0;
-  });
+  }
   
-  canvas.addEventListener('mouseleave', () => {
-    isDrawing = false;
-    if(socket) socket.emit('sendStrokeData', strokeData);
-    strokeData.length = 0;
-  })
-  
-  canvas.addEventListener('mousemove', (e) => {
+  canvas.addEventListener('mouseup', endDraw);
+  canvas.addEventListener('touchend', endDraw);
+  canvas.addEventListener('mouseleave', endDraw);
+
+  // canvas.addEventListener('touchcancel', endDraw);
+
+
+  function draw(e) {
     if(!isDrawing) return;
-    const x = e.offsetX;
-    const y = e.offsetY;
+
+    let x = 0;
+    let y = 0;
+
+    if(e.changedTouches) {
+      const rect = e.target.getBoundingClientRect();
+      x = e.targetTouches[0].pageX - rect.left;
+      y = e.targetTouches[0].pageY - rect.top;
+
+    } else {
+      x = e.offsetX;
+      y = e.offsetY;
+    }
+
     myPath.lineTo(x, y);
     ctx.stroke(myPath);
     strokeData.push([x / scaleWidth, y / scaleHeight]);
-  });
+  }
   
-  canvas.addEventListener('contextmenu', (e) => {
+  canvas.addEventListener('mousemove', draw);
+  canvas.addEventListener('touchmove', draw);
+
+  function erase(e) {
     e.preventDefault();
     if(socket) socket.emit('erase');
     else ctx.clearRect(0, 0, canvas.width, canvas.height);
-  });
+  }
+  
+  canvas.addEventListener('contextmenu', erase);
   
   let otherPath;
   
