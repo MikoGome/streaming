@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CloudWatch</title>
+  <link href="styles.css" rel="stylesheet"/>
+  <link href="logo.jpg" rel="icon"/>
+  <script defer src="/socket.io/socket.io.js" type="application/javascript"></script>
+  <script defer src="script.js" type="application/javascript"></script>
+</head>
+<body>
+  <h1 id="title"></h1>
+  <button id="sync" class="hidden appear">Sync</button>
+  <main class="hidden appear">
+    <video playsinline>
+      <source autoplay type="video/mp4"/> 
+      <track src="" kind="subtitles" label="english" srclang="en"/>
+    </video>
+    <div class="subtitle-holder">
+      <div class="subtitles hidden" id="sub-1"></div>
+      <div class="subtitles hidden" id="sub-2"></div>
+      <div class="subtitles hidden" id="sub-3"></div>
+    </div>
+    <div class="subtitle-holder sub-top">
+      <div class="subtitles hidden" id="sub-7"></div>
+      <div class="subtitles hidden" id="sub-8"></div>
+      <div class="subtitles hidden" id="sub-9"></div>
+    </div>
+    <div class="subtitle-holder sub-center">
+      <div class="subtitles hidden" id="sub-4"></div>
+      <div class="subtitles hidden" id="sub-5"></div>
+      <div class="subtitles hidden" id="sub-6"></div>
+    </div>
+    <div id="player">
+      <div class="top"><input type="range" min="0" value="0"></input></div>
+        <div class="bottom">
+          <div class="left">
+            <button id="play" class="svg-container">
+              <svg class="play-icon" viewBox="0 0 24 24">
+                <path d="M8,5.14V19.14L19,12.14L8,5.14Z" />
+              </svg>
+            </button>
+            <div id="volume">
+              <button id="speaker" class="svg-container">
+                <svg class="volume-high-icon" viewBox="0 0 24 24">
+                  <path d="M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.84 14,18.7V20.77C18,19.86 21,16.28 21,12C21,7.72 18,4.14 14,3.23M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16C15.5,15.29 16.5,13.76 16.5,12M3,9V15H7L12,20V4L7,9H3Z" />
+                </svg>
+              </button>
+              <input type="range" value="100" max="100" id="volume-range"/>
+            </div>
+            <p id="time"></p>
+          </div>
+          <div class="right">
+            <button id="paint">
+              <svg width="30" height="20" viewBox="0 0 24 24">
+                <path d="M11.7935 10.7934L20.4603 3.45681C20.7653 3.19859 21.2173 3.21734 21.5 3.49992C21.7826 3.78253 21.8013 4.23461 21.5431 4.53966L14.2065 13.2064M11.7935 10.7934L9.58785 12.6605C8.7162 13.3984 8.66122 14.7236 9.46875 15.5311C10.2763 16.3386 11.6015 16.2837 12.3393 15.412L14.2065 13.2064M11.7935 10.7934L14.2065 13.2064M10.3398 17.75C10.3398 19.5449 8.88477 21 7.08984 21H2.5L2.7103 20.8948C3.74629 20.3768 4.26276 19.1914 3.93667 18.0799C3.87245 17.8611 3.83395 17.6334 3.85777 17.4066C4.02929 15.7731 5.41089 14.5 7.08984 14.5C8.88477 14.5 10.3398 15.955 10.3398 17.75Z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+	    </button>
+            <button id="subtitle" class="svg-container">
+              <svg viewBox="0 0 24 24">
+                <path d="M18,11H16.5V10.5H14.5V13.5H16.5V13H18V14A1,1 0 0,1 17,15H14A1,1 0 0,1 13,14V10A1,1 0 0,1 14,9H17A1,1 0 0,1 18,10M11,11H9.5V10.5H7.5V13.5H9.5V13H11V14A1,1 0 0,1 10,15H7A1,1 0 0,1 6,14V10A1,1 0 0,1 7,9H10A1,1 0 0,1 11,10M19,4H5C3.89,4 3,4.89 3,6V18A2,2 0 0,0 5,20H19A2,2 0 0,0 21,18V6C21,4.89 20.1,4 19,4Z" />
+              </svg>
+            </button>
+            <button id="fullscreen" class="svg-container">
+              <svg class="open" viewBox="0 0 24 24">
+                <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+  </main>
+  <button id="subtitle-color" class="hidden appear">Change Subtitle Color</button>
+</body>
+</html>
