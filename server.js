@@ -5,23 +5,23 @@ const express = require('express');
 const app = express();
 const https = require('https');
 
-const folder =  '../' + process.env.VIDEO + '/';
+const folder =  path.join(__dirname, '..', process.env.VIDEO);
 const files = fs.readdirSync(folder);
 
-
 const video = files.find(file => file.endsWith('.mp4') || file.endsWith('.webm'));
-const filePath = folder + '/' + video;
+const filePath = path.join(folder, video);
 
 console.log('VIDEO: ' + video);
 
 const srt = files.find(file => file.endsWith('.srt'));
-const subtitle = convert(srt ? folder + files.find(file => file.endsWith('.srt')) : null);
+const subtitle = convert(srt ? path.join(folder, files.find(file => file.endsWith('.srt'))) : null);
 
 console.log("SUB: " + srt);
 
 console.log("");
 
 const ID = encodeURIComponent(video);
+const subID = srt && encodeURIComponent(srt);
 
 const PORT = process.env.PORT || 3000;
 
@@ -32,8 +32,11 @@ app.get('/', (req, res) => {
 });
 
 app.get('/video', (req, res) => {
-  return res.json({id: ID});
+  return res.json({id: ID, subid: subID});
 })
+
+
+// const size = fs.statSync(filePath).size;
 
 // app.get('/'+ID, (req, res) => {
 //   if(!req.headers.range) {
@@ -49,8 +52,8 @@ app.get('/video', (req, res) => {
 //     'Accept-Ranges': 'bytes',
 //     'Content-Range': `bytes ${start}-${end}/${size}`,
 //   });
-//   return fs.createReadStream(video, {start, end}).pipe(res);
-//   // res.sendFile(path.resolve(video));
+//   return fs.createReadStream(filePath, {start, end}).pipe(res);
+//   // res.sendFile(path.resolve(filePath));
 // });
 
 app.get('/'+ID, (req, res) => {
@@ -82,7 +85,7 @@ app.get('/'+ID, (req, res) => {
 
   fs.stat(filePath, (err, stat) => {
       if (err) {
-          console.error(`File stat error for ${filePath}.`);
+	      console.error(`File stat error for ${filePath}.`);
           console.error(err);
           res.sendStatus(500);
           return;
@@ -133,7 +136,7 @@ app.get('/'+ID, (req, res) => {
   });
 })
 
-app.get('/subtitle', (req, res) => {
+app.get('/' + subID, (req, res) => {
   return res.end(subtitle);
 });
 
@@ -147,7 +150,7 @@ const io = socket(server);
 let strokeRecord = [];
 
 const socketHandler = (socket) => {
-  
+
   socket.join(ID);
 
   socket.on('follow', (id) => {

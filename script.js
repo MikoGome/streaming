@@ -12,12 +12,15 @@ const video = document.querySelector('video');
 const subtitleColorButton = document.getElementById('subtitle-color');
 const syncButton = document.getElementById('sync');
 
+let subID;
+
 fetch('/video')
 .then(res => res.json())
 .then(data => {
-  const {id} = data;
+  const {id, subid} = data;
   const source = document.querySelector('source');
   source.setAttribute('src', id);
+  subID = subid;
   video.load();
   video.dispatchEvent(new Event('appear'));
   document.querySelector('h1').innerText = decodeURIComponent(id).replace(/^\[.*?\]|\.\w+$/g, '').trim();
@@ -162,8 +165,9 @@ document.body.addEventListener('connect', (e) => {
     fetch('/video')
       .then(res => res.json())
       .then(data => {
-      const {id} = data;
+      const {id,subid} = data;
       const source = document.querySelector('source');
+      subID = subid;
       source.setAttribute('src', id);
       video.load();
       document.querySelector('h1').innerText = decodeURIComponent(id).replace(/^\[.*?\]|\.\w+$/g, '').trim();
@@ -183,6 +187,10 @@ document.body.addEventListener('connect', (e) => {
     openCanvas(false, isOpen);
   });
 
+});
+
+document.body.addEventListener("connect", e => {
+
   socket.on("startVote", ()=> {
     startVote();
   });
@@ -191,7 +199,7 @@ document.body.addEventListener('connect', (e) => {
     displayScore(scores.map(({score}) => score));
   });
 
-});
+}, {once: true});
 
 function displayScore(scores) {
   const score=parseFloat((scores.reduce((a,b) => a + b)/scores.length).toFixed(2));
@@ -459,8 +467,7 @@ document.addEventListener('fullscreenchange', () => {
 video.addEventListener('loadedmetadata', () => {
   input.setAttribute('max', video.duration);
   time.innerText = timeString();
-  track.src = '';
-  track.src = "subtitle";
+  track.src = subID;
 });
 
 video.addEventListener('loadedmetadata', (e) => {
