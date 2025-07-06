@@ -8,12 +8,12 @@ const https = require('https');
 const folder =  path.join(__dirname, '..', process.env.VIDEO);
 const files = fs.readdirSync(folder);
 
-const video = files.find(file => file.endsWith('.mp4') || file.endsWith('.webm'));
+const video = files.find(file => (file.endsWith('.mp4') || file.endsWith('.webm')) && file.includes(process.env.EP || ""));
 const filePath = path.join(folder, video);
 
 console.log('VIDEO: ' + video);
 
-const srt = files.find(file => file.endsWith('.srt'));
+const srt = files.find(file => file.endsWith('.srt') && file.includes(process.env.EP || ""));
 const subtitle = convert(srt ? path.join(folder, files.find(file => file.endsWith('.srt'))) : null);
 
 console.log("SUB: " + srt);
@@ -36,26 +36,26 @@ app.get('/video', (req, res) => {
 })
 
 
-// const size = fs.statSync(filePath).size;
+const size = fs.statSync(filePath).size;
 
-// app.get('/'+ID, (req, res) => {
-//   if(!req.headers.range) {
-//     return res.end('"please provide a range"');
-//   }
-//   const start = Number(req.headers.range.replace(/\D/g, ''));
-//   const chunk = 512000 * 4; //512kb
-//   const end = Math.min(start + chunk, size - 1);
-//   const length = end - start + 1;
-//   res.writeHead(206, {
-//     'Content-Type': 'video/mp4',
-//     'Content-Length': length,
-//     'Accept-Ranges': 'bytes',
-//     'Content-Range': `bytes ${start}-${end}/${size}`,
-//   });
-//   return fs.createReadStream(filePath, {start, end}).pipe(res);
-//   // res.sendFile(path.resolve(filePath));
-// });
-
+app.get('/'+ID, (req, res) => {
+  if(!req.headers.range) {
+    return res.end('"please provide a range"');
+  }
+  const start = Number(req.headers.range.replace(/\D/g, ''));
+  const chunk = 512000 * 4; //512kb
+  const end = Math.min(start + chunk, size - 1);
+  const length = end - start + 1;
+  res.writeHead(206, {
+    'Content-Type': 'video/mp4',
+    'Content-Length': length,
+    'Accept-Ranges': 'bytes',
+    'Content-Range': `bytes ${start}-${end}/${size}`,
+  });
+  return fs.createReadStream(filePath, {start, end}).pipe(res);
+  // res.sendFile(path.resolve(filePath));
+});
+/*
 app.get('/'+ID, (req, res) => {
   const options = {};
 
@@ -130,12 +130,11 @@ app.get('/'+ID, (req, res) => {
               res.sendStatus(500);
           });
 
-
           fileStream.pipe(res);
       }
   });
 })
-
+*/
 app.get('/' + subID, (req, res) => {
   return res.end(subtitle);
 });

@@ -190,16 +190,16 @@ document.body.addEventListener('connect', (e) => {
 });
 
 document.body.addEventListener("connect", e => {
-
-  socket.on("startVote", ()=> {
+  console.log('connect')
+  socket.once("startVote", ()=> {
     startVote();
   });
 
-  socket.on("displayScore", (scores) => {
+  socket.once("displayScore", (scores) => {
     displayScore(scores.map(({score}) => score));
   });
 
-}, {once: true});
+});
 
 function displayScore(scores) {
   const score=parseFloat((scores.reduce((a,b) => a + b)/scores.length).toFixed(2));
